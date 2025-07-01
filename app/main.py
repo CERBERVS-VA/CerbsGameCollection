@@ -1,6 +1,14 @@
-from fastapi import FastAPI
+from typing import Any
 from enum import Enum
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
+from pymongo import MongoClient
+from pymongo.synchronous.mongo_client import MongoClient
+
+
+# Check official docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/connect/
+DB_NAME = "gamecollection"
+SERVER_URL = "mongodb://admin:123@localhost:27017"
 
 
 class GameStatus(str, Enum):
@@ -19,10 +27,13 @@ class Game(BaseModel):
     status: str
 
 
+client: MongoClient = MongoClient(SERVER_URL)
+db = client[DB_NAME]
+
 app = FastAPI()
 
 
-games= [
+games: list[dict[str, str | int]]= [
     {
         "id": 0,
         "title": "minecraft",
@@ -64,9 +75,9 @@ def list_game(entry: Game):
 
 # function to get games via query parameters
 @app.get("/games")
-def get_game(id: int | None = None, title: str | None = None, status: GameStatus | None = None):
+def get_game(id: int | None = None, title: str | None = None, status: GameStatus | None = None) -> list[Any]:
     print(games)
-    result = []
+    result: list[Any] = []
     for game in games:
         if id == game["id"]:
             if not game in result:
