@@ -1,14 +1,19 @@
-from typing import Any
+from typing import Any, Optional
 from enum import Enum
-from fastapi import Depends, FastAPI
-from pydantic import BaseModel
-from pymongo import MongoClient
+from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from pymongo import MongoClient, AsyncMongoClient
 from pymongo.synchronous.mongo_client import MongoClient
+from typing_extensions import Annotated
+from pydantic.functional_validators import BeforeValidator
 
 
 # Check official docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/connect/
 DB_NAME = "gamecollection"
 SERVER_URL = "mongodb://admin:123@localhost:27017"
+
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class GameStatus(str, Enum):
@@ -18,7 +23,7 @@ class GameStatus(str, Enum):
 
 
 class Game(BaseModel):
-    id: int             #Eventually we replace the manually assigned ID with the ID the database assigns to it. Once we have an actual UI we should be able to access the ID without having to memorize it lmao
+    id: Optional[PyObjectId] = Field(alias = "_id", default = None)
     title: str
     releaseyear: int | None = None
     publisher: str | None = None
@@ -34,9 +39,6 @@ class Submit(BaseModel):
     publisher: str | None = None
     submittername: str
 
-
-client: MongoClient = MongoClient(SERVER_URL)
-db = client[DB_NAME]
 
 app = FastAPI()
 
@@ -82,13 +84,32 @@ submits: list[dict[str, str | int]]= [
 ]
 
 
+async def connect():
+    client: AsyncMongoClient = AsyncMongoClient(SERVER_URL)
+    db = client[DB_NAME]
+    return db
+
+
+async def make_collection():
+    db = await connect()
+    collection = db["poc"]
+    collection = db["submit"]
+    collection = db["user"]
+
+
 #curl -H 'Content-Type: application/json' -d '{"id": 3, "title": "Stardew Valley", "submittername": "Phill", "status": "planned"}' -X POST http://127.0.0.1:8000/games/
 # function to add a new game to the games list
 @app.post("/games")
-def list_game(entry: Game):
+async def list_game(entry: Game):
+    db = await connect()
     entry_dict = entry.model_dump() # BaseModel doesn't support .dict(), instead we use .model_dump()
-    games.append(entry_dict)
-    return games
+    inserted_one = await db.poc.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_game = await db.poc.find_one({"_id": inserted_one.inserted_id})
+        if inserted_game:
+            return Game(**inserted_game)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding Document")
 
 
 # function to get games via query parameters
