@@ -18,13 +18,21 @@ class GameStatus(str, Enum):
 
 
 class Game(BaseModel):
-    id: int
+    id: int             #Eventually we replace the manually assigned ID with the ID the database assigns to it. Once we have an actual UI we should be able to access the ID without having to memorize it lmao
     title: str
     releaseyear: int | None = None
     publisher: str | None = None
     appid: int | None = None
     submittername: str
     status: str
+
+
+class Submit(BaseModel):
+    id: int
+    title: str
+    releaseyear: int | None = None
+    publisher: str | None = None
+    submittername: str
 
 
 client: MongoClient = MongoClient(SERVER_URL)
@@ -63,6 +71,16 @@ games: list[dict[str, str | int]]= [
     },
 ]
 
+submits: list[dict[str, str | int]]= [
+    {
+        "id": 0,
+        "title": "your mom 5",
+        "releaseyear": 89,
+        "publisher": "Steve",
+        "submittername": "PhulpUwU",
+    },
+]
+
 
 #curl -H 'Content-Type: application/json' -d '{"id": 3, "title": "Stardew Valley", "submittername": "Phill", "status": "planned"}' -X POST http://127.0.0.1:8000/games/
 # function to add a new game to the games list
@@ -88,4 +106,27 @@ def get_game(id: int | None = None, title: str | None = None, status: GameStatus
         if status == game["status"]:
             if not game in result:
                 result.append(game)
+    return result
+
+
+@app.post("/submits")
+def submit_game(entry: Submit):
+    entry_dict = entry.model_dump()
+    submits.append(entry_dict)
+    return submits
+
+
+@app.get("/submits")
+def get_submit(id: int | None = None, title: str | None = None, submittername: str | None = None) -> list[Any]:
+    result: list[Any] = []
+    for submit in submits:
+        if id == submit["id"]:
+            if not submit in result:
+                result.append(submit)
+        if title == submit["title"]:
+            if not submit in result:
+                result.append(submit)
+        if submittername == submit["submittername"]:
+            if not submit in result:
+                result.append(submit)
     return result
