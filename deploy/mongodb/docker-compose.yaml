@@ -1,0 +1,14 @@
+services:
+    mongodb:
+        image: mongo:8.0.11
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: 123
+        ports: 
+            - 27017:27017
+        volumes:
+            - gamecollection:/data/db
+
+volumes:
+    gamecollection:
+        driver: local
