@@ -6,6 +6,8 @@ from pymongo import MongoClient, AsyncMongoClient
 from pymongo.synchronous.mongo_client import MongoClient
 from typing_extensions import Annotated
 from pydantic.functional_validators import BeforeValidator
+from .models.ObjectIdAnnotation import ObjectIdPydantic
+from bson import ObjectId
 
 
 # Check official docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/connect/
@@ -22,22 +24,34 @@ class GameStatus(str, Enum):
     completed = "completed"
 
 
+class ListType(str, Enum):
+    poc = "poc"
+    submit = "submit"
+
+
 class Game(BaseModel):
-    id: Optional[PyObjectId] = Field(alias = "_id", default = None)
+    id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
     title: str
-    releaseyear: int | None = None
-    publisher: str | None = None
-    appid: int | None = None
+    releaseyear: int | None = -1
+    publisher: str | None = "None"
+    appid: int | None = -1
     submittername: str
-    status: str
+    status: GameStatus
 
 
 class Submit(BaseModel):
-    id: int
+    id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
     title: str
     releaseyear: int | None = None
     publisher: str | None = None
     submittername: str
+
+
+class User(BaseModel):
+    id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
+    username: str
+    password: str
+    twitchuser: str | None = None
 
 
 app = FastAPI()
@@ -90,6 +104,7 @@ async def connect():
     return db
 
 
+# EW fix pls, idk kill it CREATE COLLECTIONS PROPERLY ONCE UwU
 async def make_collection():
     db = await connect()
     collection = db["poc"]
@@ -97,12 +112,11 @@ async def make_collection():
     collection = db["user"]
 
 
-#curl -H 'Content-Type: application/json' -d '{"id": 3, "title": "Stardew Valley", "submittername": "Phill", "status": "planned"}' -X POST http://127.0.0.1:8000/games/
 # function to add a new game to the games list
 @app.post("/games")
 async def list_game(entry: Game):
     db = await connect()
-    entry_dict = entry.model_dump() # BaseModel doesn't support .dict(), instead we use .model_dump()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True) # BaseModel doesn't support .dict(), instead we use .model_dump()
     inserted_one = await db.poc.insert_one(entry_dict)
     if inserted_one.inserted_id:
         inserted_game = await db.poc.find_one({"_id": inserted_one.inserted_id})
@@ -114,40 +128,110 @@ async def list_game(entry: Game):
 
 # function to get games via query parameters
 @app.get("/games")
-def get_game(id: int | None = None, title: str | None = None, status: GameStatus | None = None) -> list[Any]:
-    print(games)
+async def get_game(id: str | None = None, title: str | None = None, status: GameStatus | None = None) -> list[Any]:
+    db = await connect()
+    cursor = None
     result: list[Any] = []
-    for game in games:
-        if id == game["id"]:
-            if not game in result:
-                result.append(game)
-        if title == game["title"]:
-            if not game in result:
-                result.append(game)
-        if status == game["status"]:
-            if not game in result:
-                result.append(game)
-    return result
+    if id:
+        cursor = db.poc.find({"_id": ObjectId(id)})
+    if title:
+        cursor = db.poc.find({"title": title})
+    if status:
+        cursor = db.poc.find({"status": status})
+    if cursor:
+        async for game in cursor:
+            result.append(Game(**game))
+        return result
+    else:
+        raise HTTPException(status_code = 400, detail = "missing Query Parameters")
 
 
-@app.post("/submits")
-def submit_game(entry: Submit):
-    entry_dict = entry.model_dump()
-    submits.append(entry_dict)
-    return submits
+# function for viewers to add games to the submit list
+@app.post("/games/submit")
+async def submit_game(entry: Submit):
+    db = await connect()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True)
+    inserted_one = await db.submit.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_game = await db.submit.find_one({"_id": inserted_one.inserted_id})
+        if inserted_game:
+            return Submit(**inserted_game)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding Document")
 
 
-@app.get("/submits")
-def get_submit(id: int | None = None, title: str | None = None, submittername: str | None = None) -> list[Any]:
+# function to get games from submit list
+# MAKE SUBMIT COLLECTION CASE INSENSITIVE!!!!!!!!!
+@app.get("/games/submit")
+async def get_submit(id: str | None = None, title: str | None = None, submittername: str | None = None) -> list[Any]:
+    db = await connect()
+    cursor = None
     result: list[Any] = []
-    for submit in submits:
-        if id == submit["id"]:
-            if not submit in result:
-                result.append(submit)
-        if title == submit["title"]:
-            if not submit in result:
-                result.append(submit)
-        if submittername == submit["submittername"]:
-            if not submit in result:
-                result.append(submit)
-    return result
+    if id:
+        cursor = db.submit.find({"_id": ObjectId(id)})
+    if title:
+        cursor = db.submit.find({"title": title})
+    if submittername:
+        cursor = db.submit.find({"submittername": submittername})
+    if cursor:
+        async for game in cursor:
+            result.append(Submit(**game))
+        return result
+    else:
+        raise HTTPException(status_code = 400, detail = "missing Query Parameters")
+
+
+# function to delete games in poc or submit lists
+@app.delete("/games/remove")
+async def delete_game(fromlist: ListType, id: str):
+    db = await connect()
+    if fromlist == "poc":
+        await db.poc.delete_one({"_id": ObjectId(id)})
+        return HTTPException(status_code = 404, detail = f"Object with ID {id} successfully deleted from Games")
+    elif fromlist == "submit":
+        await db.submit.delete_one({"_id": ObjectId(id)})
+        return HTTPException(status_code = 404, detail = f"Object with ID {id} successfully deleted from Submits")
+    else:
+        raise HTTPException(status_code = 400, detail = "wrong or missing Query Parameters")
+
+
+# add users
+# MAKE USER COLLECTION CASE INSENSITIVE!!!!!!!!!
+@app.post("/users")
+async def add_user(entry: User):
+    db = await connect()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True)
+    inserted_one = await db.user.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_user = await db.user.find_one({"_id": inserted_one.inserted_id})
+        if inserted_user:
+            return User(**inserted_user)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding User")
+
+
+# get Users (mostly for deleting them lol)
+@app.get("/users")
+async def get_user(id: str | None = None, username: str | None = None) -> list[Any]:
+    db = await connect()
+    cursor = None
+    result: list[Any] = []
+    if id:
+        cursor = db.user.find({"_id": ObjectId(id)})
+    if username:
+        cursor = db.user.find({"username": username})
+    if cursor:
+        async for user in cursor:
+            result.append(User(**user))
+        return result
+    else:
+        raise HTTPException(status_code = 400, detail = "missing Query Parameters")
+    
+
+# delete users
+@app.delete("/users")
+async def delete_user(id: str):
+    db = await connect()
+    await db.user.delete_one({"_id": ObjectId(id)})
+    return HTTPException(status_code = 404, detail = f"User with ID {id} successfully removed")
+# something feels off about this tbh BUT IT WORKS :3
