@@ -1,6 +1,8 @@
 from typing import Any, Optional
 from enum import Enum
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware 
 from pydantic import BaseModel, Field
 from pymongo import MongoClient, AsyncMongoClient
 from pymongo.synchronous.mongo_client import MongoClient
@@ -8,6 +10,7 @@ from typing_extensions import Annotated
 from pydantic.functional_validators import BeforeValidator
 from .models.ObjectIdAnnotation import ObjectIdPydantic
 from bson import ObjectId
+import json
 
 
 # Check official docs: https://www.mongodb.com/docs/languages/python/pymongo-driver/current/connect/
@@ -54,48 +57,15 @@ class User(BaseModel):
     twitchuser: str | None = None
 
 
+origins = ["*"]
+
+
 app = FastAPI()
-
-
-games: list[dict[str, str | int]]= [
-    {
-        "id": 0,
-        "title": "minecraft",
-        "releaseyear": 2005,
-        "publisher": "Mojang",
-        "appid": 354,
-        "submittername": "PhulpUwU",
-        "status": "ongoing"
-    },
-    {
-        "id": 1,
-        "title": "Cod of Duty",
-        "releaseyear": 2023,
-        "publisher": "Mojang",
-        "appid": 345,
-        "submittername": "PhulpOwO",
-        "status": "planned"
-    },
-    {
-        "id": 2,
-        "title": "cuphead",
-        "releaseyear": 26753,
-        "publisher": "Mojang",
-        "appid": 198,
-        "submittername": "Dog3",
-        "status": "completed"
-    },
-]
-
-submits: list[dict[str, str | int]]= [
-    {
-        "id": 0,
-        "title": "your mom 5",
-        "releaseyear": 89,
-        "publisher": "Steve",
-        "submittername": "PhulpUwU",
-    },
-]
+app.add_middleware(CORSMiddleware, 
+                   allow_origins = origins, 
+                   allow_credentials = True, 
+                   allow_methods = ["*"],
+                   allow_headers = ["*"])
 
 
 async def connect():
@@ -235,3 +205,18 @@ async def delete_user(id: str):
     await db.user.delete_one({"_id": ObjectId(id)})
     return HTTPException(status_code = 404, detail = f"User with ID {id} successfully removed")
 # something feels off about this tbh BUT IT WORKS :3
+
+
+@app.get("/games/list")
+async def list_games():
+    db = await connect()
+    cursor = db["poc"]
+    games = cursor.find()
+    green = []
+    async for game in games:
+        if game is None:
+            print("empty :((")
+        else:
+            a = Game(**game)
+            green.append(a)
+    return green
