@@ -11,4 +11,5 @@
     },
     "cSpell.language": "en,de-de",
     "python.analysis.typeCheckingMode": "basic",
+    "python.useEnvironmentsExtension": true
 }
