@@ -1,4 +1,4 @@
-import '../scss/style.scss'
+import '../scss/main.scss'
 import typescriptLogo from '/typescript.svg'
 import viteLogo from '/vite.svg'
 import { setupCounter } from './counter.ts'
@@ -20,5 +20,28 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </p>
   </div>
 `
+
+function getData(status: boolean, name: string, username: string): Game {
+  return {status, name, username}
+}
+
+var funnyTest: string = "Test";
+console.log(funnyTest);
+
+type Game = {
+  name: string;
+  status: boolean;
+  username: string;
+};
+
+function doStuff(): void {
+  let {status, title, username} = getData(true, "test", "username");
+  console.log(status)
+  console.log(title)
+  console.log(username)
+}
+
+doStuff();
+
 
 setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
