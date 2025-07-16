@@ -1,5 +1,8 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.experiments.optOutFrom": [
+        "pythonTerminalEnvVarActivation"
+    ],
     "[python]": {
         "editor.codeActionsOnSave": {
             "editor.formatOnSave": "explicit",
@@ -8,11 +11,5 @@
     },
     "cSpell.language": "en,de-de",
     "python.analysis.typeCheckingMode": "basic",
-    "cSpell.words": [
-        "Pydentic"
-    ],
-    "python.useEnvironmentsExtension": true,
-    "python.experiments.optOutFrom": [
-        "pythonTerminalEnvVarActivation"
-    ],
+    "python.useEnvironmentsExtension": true
 }
