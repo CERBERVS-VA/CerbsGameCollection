@@ -62,10 +62,11 @@ function addElement(values) {
 function validateFormData(formTitle, formUser, status) {
   var validKey = 0
 
-  if(status == "ongoing" || status == "planned" || status == "completed"){validKey ++}
-  if(formTitle !== ""){validKey ++}
-  if(formUser !== ""){validKey ++}
-
+  // No need to evaluate the if with { } if it is a one liner
+  if(status == "ongoing" || status == "planned" || status == "completed") validKey ++
+  if(formTitle !== "") validKey ++
+  if(formUser !== "") validKey ++
+  
   return validKey
 }
 
@@ -73,6 +74,7 @@ function validateFormData(formTitle, formUser, status) {
 function buttonAdd() {
     const {status, formUser, formTitle} = readForm();
 
+    // Yoda conditions 
     if(validateFormData(formTitle, formUser, status) != 3) return console.log("Validation failed");        // in Python "if function" checks if something exists, in JS it instead checks if it returns something other than 0 (aka false)
     dataSentSuccessfully = sendData(formTitle, formUser, status);
     
