@@ -60,11 +60,12 @@ function addElement(values) {
 
 //validates the Input from the Form
 function validateFormData(formTitle, formUser, status) {
-  var validKey = 0
+  var validKey = 0;
 
-  if(status == "ongoing" || status == "planned" || status == "completed"){validKey ++}
-  if(formTitle !== ""){validKey ++}
-  if(formUser !== ""){validKey ++}
+  if(status == "ongoing" || status == "planned" || status == "completed") validKey ++;
+  else 
+  if(formTitle !== "") validKey ++;
+  if(formUser !== "") validKey ++;
 
   return validKey
 }
