@@ -59,17 +59,21 @@ function addElement(values) {
 }
 
 //validates the Input from the Form
-function validateFormData() {
-  // CONTINUE HERE WITH VALIDATION STUFF
-  return 1
+function validateFormData(formTitle, formUser, status) {
+  var validKey = 0
+
+  if(status == "ongoing" || status == "planned" || status == "completed"){validKey ++}
+  if(formTitle !== ""){validKey ++}
+  if(formUser !== ""){validKey ++}
+
+  return validKey
 }
 
 //"Add" button functionality for processing form data and adding data to api and such
 function buttonAdd() {
     const {status, formUser, formTitle} = readForm();
 
-    //validate data
-    if(validateFormData() != true) return console.log("Validation failed");        // in Python "if function" checks if something exists, in JS it instead checks if it returns something other than 0 (aka false)
+    if(validateFormData(formTitle, formUser, status) != 3) return console.log("Validation failed");        // in Python "if function" checks if something exists, in JS it instead checks if it returns something other than 0 (aka false)
     dataSentSuccessfully = sendData(formTitle, formUser, status);
     
     if(dataSentSuccessfully != true) return console.log("400: couldn't send Data to API");
@@ -79,7 +83,6 @@ function buttonAdd() {
     formUserInput.value = "";
     //snackbar?? pop up for error/success codes :3
 }
-
 
 //anonymous function to do shit with data before giving it to multiple functions for example
 getData().then(async data =>
