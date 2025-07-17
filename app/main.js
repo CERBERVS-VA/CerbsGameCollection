@@ -60,7 +60,7 @@ function addElement(values) {
 
 //validates the Input from the Form
 function validateFormData(formTitle, formUser, status) {
-  var validKey = 0
+  var validKey = 0;
 
   // No need to evaluate the if with { } if it is a one liner
   if(status == "ongoing" || status == "planned" || status == "completed") validKey ++;
