@@ -6,8 +6,8 @@ export const POCStatus = {
 } as const;
 export type GameStatus = typeof POCStatus[keyof typeof POCStatus];
 
-export type GameForm = {
+export type GameSubmission = {
   title: string;
-  submitterName: string;
+  submitter: string;
   status: GameStatus;
 };

@@ -31,30 +31,31 @@ class ListType(str, Enum):
     poc = "poc"
     submit = "submit"
 
-
 class Game(BaseModel):
     id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
     title: str
-    releaseyear: int | None = -1
-    publisher: str | None = "None"
     appid: int | None = -1
-    submittername: str
+    submitter: str
     status: GameStatus
+    release_year: int = Field(alias = "releaseyear", default = -1)
+    publisher: str | None = "None"
 
 
+# id=None title='ee' submitter='ee' status=<GameStatus.completed: 'completed'> release_year=-1 publisher=None
 class Submit(BaseModel):
     id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
     title: str
-    releaseyear: int | None = None
+    submitter: str
+    status: GameStatus
+    release_year: int = Field(alias = "releaseyear", default = -1)
     publisher: str | None = None
-    submittername: str
 
 
 class User(BaseModel):
     id: Optional[Annotated[ObjectId, ObjectIdPydantic]] = Field(alias = "_id", default = None)
     username: str
     password: str
-    twitchuser: str | None = None
+    twitch_user: str | None = None
 
 
 origins = ["*"]
@@ -92,6 +93,20 @@ async def list_game(entry: Game):
         inserted_game = await db.poc.find_one({"_id": inserted_one.inserted_id})
         if inserted_game:
             return Game(**inserted_game)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding Document")
+
+@app.post("/submit")
+async def submit(entry: Submit):
+    print("uwu")
+    print(entry)
+    db = await connect()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True) # BaseModel doesn't support .dict(), instead we use .model_dump()
+    inserted_one = await db.poc.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_game = await db.poc.find_one({"_id": inserted_one.inserted_id})
+        if inserted_game:
+            return Submit(**inserted_game)
     else:
         raise HTTPException(status_code = 500, detail = "Error adding Document")
 
@@ -133,7 +148,7 @@ async def submit_game(entry: Submit):
 # function to get games from submit list
 # MAKE SUBMIT COLLECTION CASE INSENSITIVE!!!!!!!!!
 @app.get("/games/submit")
-async def get_submit(id: str | None = None, title: str | None = None, submittername: str | None = None) -> list[Any]:
+async def get_submit(id: str | None = None, title: str | None = None, submitter: str | None = None) -> list[Any]:
     db = await connect()
     cursor = None
     result: list[Any] = []
@@ -141,8 +156,8 @@ async def get_submit(id: str | None = None, title: str | None = None, submittern
         cursor = db.submit.find({"_id": ObjectId(id)})
     if title:
         cursor = db.submit.find({"title": title})
-    if submittername:
-        cursor = db.submit.find({"submittername": submittername})
+    if submitter:
+        cursor = db.submit.find({"submitter": submitter})
     if cursor:
         async for game in cursor:
             result.append(Submit(**game))
@@ -214,6 +229,7 @@ async def list_games():
     games = cursor.find()
     green = []
     async for game in games:
+        print(game)
         if game is None:
             print("empty :((")
         else:
