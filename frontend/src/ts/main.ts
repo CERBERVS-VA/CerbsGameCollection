@@ -5,6 +5,9 @@ const formRadioInput: HTMLFormElement = document.querySelector("form") as HTMLFo
 const formTitleInput: HTMLInputElement = document.getElementById("add-title") as HTMLInputElement;
 const formUserInput: HTMLInputElement = document.getElementById("add-name") as HTMLInputElement;
 
+const gameAddingButton: HTMLButtonElement = document.getElementById("add-game-button") as HTMLButtonElement;
+gameAddingButton.addEventListener("click", () => buttonAdd())
+
 //reads Data from form Inputs
 function readForm() {
   const formStatus = new FormData(formRadioInput);
@@ -45,15 +48,18 @@ function sendData(formTitle: string, formUser: string, status:string){
     body: bodyData
   });
   fetch(request);
-  const reqStat = new Response(request);    //Tobi will fix <33
+  const reqStat = new Response(request);    //TODO Tobi will fix <33
   return reqStat.ok;
 }
 
 //adds Elements from query to list
-function addElement(values: string) {
+function addElement(values: any) {
     const newElement = document.createElement("li");
-    const newContent = document.createTextNode(values);
-    newElement.append(newContent);
+    newElement.innerHTML = 
+    "<div id='game-element'>"+ 
+      "<p>Title:</p>"+
+      values.title+ 
+    "</div>";
     gameList.appendChild(newElement);
 }
 
@@ -68,7 +74,7 @@ function validateFormData(formTitle: string, formUser: string, status:string) {
     else console.log("Gametitle Validation failed: Title empty")
   if(formUser !== "") validKey ++;
     else console.log("User Validation failed: Username empty")
-  
+  //TODO add extra Validations
   return validKey
 }
 
@@ -83,10 +89,13 @@ function buttonAdd() {
     
     if(dataSentSuccessfully != true) return console.log("400: couldn't send Data to API");
     console.log("200: Game added");
-    addElement(formTitle);
+
+    // TODO Add all data from Button into JSON Array teehee (see if works)
+    const json: Array<any> = Array(formTitle, formUser, status) as any // looks cursed, probably works differently :3
+    addElement(json);
     formTitleInput.value = "";
     formUserInput.value = "";
-    //snackbar?? pop up for error/success codes :3
+    //TODO snackbar?? pop up for error/success codes :3
 }
 
 //anonymous function to do shit with data before giving it to multiple functions for example
@@ -95,7 +104,7 @@ getData().then(async data =>
         console.log(data);
         var i = 0;
         while (i < data.length) {
-          addElement(data[i].title);
+          addElement(data[i]);
           i++;
         }
     });
