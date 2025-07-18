@@ -7,8 +7,12 @@ const radioFrom: HTMLFormElement = document.querySelector("form") as HTMLFormEle
 const titleInput: HTMLInputElement = document.getElementById("add-title") as HTMLInputElement;
 const userInput: HTMLInputElement = document.getElementById("add-name") as HTMLInputElement;
 const gameUList: HTMLUListElement = document.getElementById("all") as HTMLUListElement;
+const gameAddingButton: HTMLButtonElement = document.getElementById("add-game-button") as HTMLButtonElement;
+var gameList: HTMLElement = document.getElementById("all") as HTMLElement;
 
+gameAddingButton.addEventListener("click", () => buttonAdd())
 
+//reads Data from form Inputs
 function readForm(): GameForm {
   const formData = new FormData(radioFrom);
   
@@ -30,11 +34,14 @@ function readForm(): GameForm {
 
 
 //adds Elements from query to list
-function addElement(values: string) {
+function addElement(values: any) {
     const newElement = document.createElement("li");
-    const newContent = document.createTextNode(values);
-    newElement.append(newContent);
-    gameUList.appendChild(newElement);
+    newElement.innerHTML = 
+    "<div id='game-element'>"+ 
+      "<p>Title:</p>"+
+      values.title+ 
+    "</div>";
+    gameList.appendChild(newElement);
 }
 
 //validates the Input from the Form
@@ -49,7 +56,7 @@ function validateFormData(game: GameForm) {
     else console.log("Game title Validation failed: Title empty")
   if (game.submitterName !== "") validKey ++;
     else console.log("User Validation failed: Username empty")
-  
+  //TODO add extra Validations
   return validKey
 }
 
@@ -63,6 +70,7 @@ function buttonAdd() {
     
     if(dataSentSuccessfully != true) return console.log("400: couldn't send Data to API");
     console.log("200: Game added");
+    // TODO Add all data from Button into JSON Array teehee (see if works)
     addElement(game.title);
     titleInput.value = "";
     userInput.value = "";
