@@ -1,4 +1,4 @@
-import type { GameSubmission } from "../models/Game";
+import type { Submission } from "../models/Game";
 
 //queries data from API
 /**
@@ -6,13 +6,14 @@ import type { GameSubmission } from "../models/Game";
  * 
  * @returns {Game} List of the fetched games.    
  */
-export async function readGames() {
+export async function readData(route: string): Promise<any> {
   const headers: Headers = new Headers();
-  const url = "http://127.0.0.1:8080/games/list";
+  const url = "http://127.0.0.1:8080";
+  const uri = `${url}${route}`;
 
   headers.set('Content-Type', 'application/json');
 
-  const request: RequestInfo = new Request(url, {
+  const request: RequestInfo = new Request(uri, {
     method: 'GET',
     headers: headers
   });
@@ -32,7 +33,7 @@ export async function readGames() {
 
 
 //sends Elements added to poc list to the database and returns status(plus content??)
-export async function createGame(game: GameSubmission): Promise<boolean> {
+export async function createData(game: Submission): Promise<boolean> {
   const bodyData = JSON.stringify(game);
   console.log(bodyData);
   const headers = new Headers();

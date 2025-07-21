@@ -2,6 +2,15 @@ html {
     background-color: whitesmoke;
 }
 
-#game-element {
+.split-list {
+  display: flex; 
+  height: 100vh;
+}
+
+.submit-list, .game-list {
+  width: 50%;
+}
+
+.game-element {
   background-color: white;
 }

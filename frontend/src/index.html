@@ -4,29 +4,33 @@
       <link rel="stylesheet" href="./scss/main.scss" />
     </head>
     <body>
-        <h1>Games List</h1>
-        <ul id="all">
-            <!--List of games (specifically POC->unsorted) goes here-->
-        </ul>
-        <div>
-            <label for="add-title">Game Title:</label>
-            <input type="text" id="add-title"/><br><br>
-            <label for="add-name">Submitter Name:</label>
-            <input type="text" id="add-name"/><br><br>
-        </div>
-        <div>
-            <form>
-                <label>Choose Status:</label><br>
-                <input type="radio" id="planned" name="game-status" value="planned" checked/>
-                <label for="planned">Planned</label><br>
-                <input type="radio" id="ongoing" name="game-status" value="ongoing"/>
-                <label for="ongoing">Ongoing</label><br>
-                <input type="radio" id="completed" name="game-status" value="completed"/>
-                <label for="completed">Completed</label><br><br>
-            </form>
-        </div>
-        <div>
-            <input type="button" id="add-game-button" value="Add Game"/>
+        <div class="split-list">
+            <div class="submit-list">
+                <h1>Submit List</h1>
+                <ul id="all-submits">
+                    <!--List of games (specifically POC->unsorted) goes here-->
+                </ul>
+                <div>
+                    <label for="add-title">Game Title:</label>
+                    <input type="text" id="add-title"/><br><br>
+                    <label for="add-name">Submitter Name:</label>
+                    <input type="text" id="add-name"/><br><br>
+                    <label for="add-release-year">Release Year:</label>
+                    <input type="number" id="add-release-year" pattern="\d*"/><br><br> <!--TODO: Make Release Year an actual Date input instead of a number-->
+                    <label for="add-publisher">Publisher:</label>
+                    <input type="text" id="add-publisher"><br><br>
+                </div>
+                <div>
+                    <input type="button" id="add-game-button" value="Add Game"/>
+                </div>
+            </div>
+            <div class="game-list">
+                <h1>Game List</h1>
+                <ul id="all-games">
+                    <!--List of games (specifically POC->unsorted) goes here-->
+                </ul>
+                <!--TODO: Add Element to Games with buttons (and delete from submits) [SUBMIT has button to move submission to GAME and then edit with buttons in GAME to update POC Collection in ]-->
+            </div>
         </div>
 
         <script type="module" src=./ts/main.ts></script>

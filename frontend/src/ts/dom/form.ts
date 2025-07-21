@@ -1,42 +1,54 @@
-import type { GameSubmission, GameStatus } from "../models/Game";
-import { POCStatus } from "../models/Game";
+import type { Submission, Game, GameStatus } from "../models/Game";
 
 
-const radioForm = document.querySelector("form") as HTMLFormElement;
 const titleInput = document.getElementById("add-title") as HTMLInputElement;
 const userInput = document.getElementById("add-name") as HTMLInputElement;
-const gameUList = document.getElementById("all") as HTMLUListElement;
+const relYearInput = document.getElementById("add-release-year") as HTMLInputElement;
+const publisherInput = document.getElementById("add-publisher") as HTMLInputElement;
 
 
 // Reads data from the form
-export function readForm(): GameSubmission {
-  const formData = new FormData(radioForm);
+export function readForm(): Submission {
   const title = titleInput.value.trim();
   const submitter = userInput.value.trim();
-  let gameStatus = formData.get("game-status") as GameStatus | null;
+  const relYear: number = Number(relYearInput.value); //TODO make date
+  const publisher = publisherInput.value.trim();
 
-  if (!gameStatus || !Object.values(POCStatus).includes(gameStatus)) {
-    console.log("Could not read the game status from the radio button");
-    gameStatus = POCStatus.Completed;
-  }
-
-  return { title, submitter, status: gameStatus };
+  let gameSubmission: Submission = {
+    title: title,
+    submitter: submitter,
+    releaseYear: relYear,
+    publisher: publisher,
+  };
+  return gameSubmission;
 }
 
 // Appends a game title to the list
-export function addElement(gameTitle: string): void {
-  const newElement = document.createElement("li");
-  newElement.innerHTML = `
-    <div id="game-element">
-      <p>Title:</p>
-      ${gameTitle}
-    </div>
-  `;
-  gameUList.appendChild(newElement);
+export function addElement(htmlElement: HTMLElement, parentElementID: string): void {
+  const parentElement: HTMLElement = document.getElementById(parentElementID) as HTMLElement;
+  //TODO: make Keys not be DB keys, but actual display text | remove _id
+  parentElement.appendChild(htmlElement);
 }
 
 // Clear the form inputs
 export function clearForm(): void {
   titleInput.value = "";
   userInput.value = "";
+  relYearInput.value = "";
+  publisherInput.value = "";
+}
+
+export function createListElement(element: Game|Submission): HTMLElement {
+  const listElement: HTMLElement = document.createElement("li") as HTMLElement;
+  listElement.className = "game-element";
+  for(const key of Object.keys(element)){
+    if(key != "_id"){
+      //@ts-ignore
+      const value = element[key];
+      const gameProperty: HTMLParagraphElement = document.createElement("p");
+      gameProperty.textContent = `${key}: ${value}`;
+      listElement.appendChild(gameProperty);
+    }
+  }
+  return listElement
 }
