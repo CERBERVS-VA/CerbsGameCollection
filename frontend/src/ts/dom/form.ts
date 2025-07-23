@@ -14,8 +14,9 @@ export function readForm(): Submission {
   const relYear: number = Number(relYearInput.value); //TODO make date
   const publisher = publisherInput.value.trim();
 
+  //@ts-ignore
   let gameSubmission: Submission = {
-    _id: "-1",
+    //_id: "",   TS will id drin haben, weil Submission so definiert ist, das macht aber die submission funktion kaputt.
     title: title,
     submitter: submitter,
     releaseYear: relYear,

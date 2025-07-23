@@ -89,13 +89,31 @@ async def submit(entry: Submit):
             return Submit(**inserted_game)
     else:
         raise HTTPException(status_code = 500, detail = "Error adding Document")
+    
+
+# adds game to POC collection
+@app.post("/game")
+async def addGame(entry: Submit):
+    print(entry)
+    db = await connect()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True) # BaseModel doesn't support .dict(), instead we use .model_dump()
+    inserted_one = await db.poc.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_game = await db.poc.find_one({"_id": inserted_one.inserted_id})
+        if inserted_game:
+            return Submit(**inserted_game)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding Document")
 
 
 @app.get("/submit/list")
-async def list_submits():
+async def list_submits(_id: str | None = None):
     db = await connect()
     cursor = db["submit"]
-    submitcursor = cursor.find()
+    if _id:
+        submitcursor = cursor.find({"_id": ObjectId(_id)})
+    else:
+        submitcursor = cursor.find()
     submits: list[Submit] = []
     async for submit in submitcursor:
         print(submit)
@@ -103,6 +121,7 @@ async def list_submits():
             print("empty :((")
         else:
             submits.append(Submit(**submit))
+    print(submits)
     return submits
 
 
