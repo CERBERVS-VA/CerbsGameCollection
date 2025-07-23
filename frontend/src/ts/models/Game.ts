@@ -7,6 +7,7 @@ export const POCStatus = {
 export type GameStatus = typeof POCStatus[keyof typeof POCStatus];
 
 export type Submission = {
+  _id: string;
   title: string;
   submitter: string;
   releaseYear: number;
@@ -14,6 +15,7 @@ export type Submission = {
 };
 
 export type Game = Submission& {
+  _id: string;
   status: GameStatus;
   appid: number;
 };

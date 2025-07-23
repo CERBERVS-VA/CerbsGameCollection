@@ -1,4 +1,4 @@
-import type { Submission, Game, GameStatus } from "../models/Game";
+import type { Submission, Game} from "../models/Game";
 
 
 const titleInput = document.getElementById("add-title") as HTMLInputElement;
@@ -15,6 +15,7 @@ export function readForm(): Submission {
   const publisher = publisherInput.value.trim();
 
   let gameSubmission: Submission = {
+    _id: "-1",
     title: title,
     submitter: submitter,
     releaseYear: relYear,
@@ -38,6 +39,7 @@ export function clearForm(): void {
   publisherInput.value = "";
 }
 
+//creates List Elements, including button
 export function createListElement(element: Game|Submission): HTMLElement {
   const listElement: HTMLElement = document.createElement("li") as HTMLElement;
   listElement.className = "game-element";
