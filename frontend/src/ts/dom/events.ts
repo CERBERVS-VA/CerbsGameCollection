@@ -1,7 +1,7 @@
 import { createPOCData, createSubmissionData, readDataPerID } from "../api/game";
 import { readForm, addElement, clearForm, createListElement } from "../dom/form";
 import { validateFormData } from "../core/validate";
-import type { Submission, Game} from "../models/Game";
+import type { Submission } from "../models/submission";
 
 
 //"Add" button functionality for processing form data and adding data to api and such
