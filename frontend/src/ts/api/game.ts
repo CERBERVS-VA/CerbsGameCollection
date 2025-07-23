@@ -1,4 +1,4 @@
-import type { Submission } from "../models/Game";
+import type { Submission } from "../models/submission";
 
 //queries data from API
 /**
@@ -33,8 +33,8 @@ export async function readData(route: string): Promise<any> {
 
 
 //sends Elements added to poc list to the database and returns status(plus content??)
-export async function createData(game: Submission): Promise<boolean> {
-  const bodyData = JSON.stringify(game);
+export async function createData(submission: Submission): Promise<boolean> {
+  const bodyData = JSON.stringify(submission);
   console.log(bodyData);
   const headers = new Headers();
 
@@ -49,7 +49,7 @@ export async function createData(game: Submission): Promise<boolean> {
   try {
     const response = await fetch(request); 
     const text = await response.text();
-    console.log(`Response after sending Game: ${game.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
+    console.log(`Response after sending Game: ${submission.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
     return response.ok;
   } catch (error: any) {
     console.error(error.message);

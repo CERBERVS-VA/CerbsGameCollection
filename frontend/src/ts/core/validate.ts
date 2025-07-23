@@ -1,4 +1,4 @@
-import type { Submission } from "../models/Game";
+import type { Submission } from "../models/submission";
 
 //validates the Input from the Form
 export function validateFormData(game: Submission) {

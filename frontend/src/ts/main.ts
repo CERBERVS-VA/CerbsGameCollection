@@ -1,7 +1,8 @@
+import type { Submission } from "./models/submission";
+import type { Game } from "./models/Game";
 import { readData } from "./api/game";
 import { addElement, clearForm, createListElement } from "./dom/form";
 import { buttonAddSubmission, moveEntry } from "./dom/events";
-import type { Submission, Game } from "./models/Game";
 
 
 // queries the HTML Elements from the DOM Tree for manipulation and reading data
@@ -15,7 +16,7 @@ gameSubmittingButton.addEventListener("click", () => buttonAddSubmission());
 async function loadInitialElements() {
   const games: Game[] = await readData(routeGame);
   const submits: Submission[] = await readData(routeSubmit);
-  
+
   for (const game of games) {
     const gameListElement: HTMLElement = createListElement(game);
     addElement(gameListElement, "all-games");

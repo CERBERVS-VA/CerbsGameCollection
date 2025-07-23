@@ -1,21 +1,16 @@
-// Instead of using an const enum, declare an object as const tl;dr: erasableSyntaxOnly
-export const POCStatus = {
-  Planned: "planned",
-  Completed: "completed",
-  Ongoing: "ongoing"
+import type { ShapeToType } from "../core/type_validation";
+import { POCStatus } from "./base";
+import { isShapeMatch } from "../core/type_validation";
+import { submissionShape } from "./shared";
+
+
+const gameShape = {
+  ...submissionShape,
+  status: { enum: Object.values(POCStatus) },
+  appid: 'number',
 } as const;
-export type GameStatus = typeof POCStatus[keyof typeof POCStatus];
 
-export type Submission = {
-  _id: string;
-  title: string;
-  submitter: string;
-  releaseYear: number;
-  publisher: string;
-};
+export type Game = ShapeToType<typeof gameShape>;
 
-export type Game = Submission& {
-  _id: string;
-  status: GameStatus;
-  appid: number;
-};
+export const isGame = (x: unknown): x is Game =>
+  isShapeMatch(x, gameShape);
