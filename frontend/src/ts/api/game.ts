@@ -1,4 +1,4 @@
-import type { Submission } from "../models/submission";
+import type { Submission, SubmissionWrite } from "../models/submission";
 
 //queries data from API
 /**
@@ -33,14 +33,14 @@ export async function readData(route: string): Promise<any> {
 
 
 //sends Elements added to poc list to the database and returns status(plus content??)
-export async function createSubmissionData(game: Submission): Promise<boolean> {
+export async function createSubmission(game: Submission): Promise<boolean> {
   const bodyData = JSON.stringify(game);
   console.log(bodyData);
   const headers = new Headers();
 
   headers.set("Content-Type", "application/json");
 
-  const request = new Request("http://127.0.0.1:8080/submit", {
+  const request = new Request("http://127.0.0.1:8080/submits", {
     method: "POST",
     headers: headers,
     body: bodyData
@@ -49,7 +49,7 @@ export async function createSubmissionData(game: Submission): Promise<boolean> {
   try {
     const response = await fetch(request); 
     const text = await response.text();
-    console.log(`Response after sending Game: ${submission.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
+    console.log(`Response after sending Game: ${game.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
     return response.ok;
   } catch (error: any) {
     console.error(error.message);
@@ -59,9 +59,9 @@ export async function createSubmissionData(game: Submission): Promise<boolean> {
 
 
 //reads data from submits per game ID, useful for buttons
-export async function readDataPerID(gameID: string): Promise<any> {
+export async function readSubmit(submitID: string): Promise<any> {
   const headers: Headers = new Headers();
-  const url = `http://127.0.0.1:8080/submit/list?_id=${gameID}`;
+  const url = `http://127.0.0.1:8080/submits/${submitID}`;
 
   headers.set('Content-Type', 'application/json');
 
@@ -85,14 +85,20 @@ export async function readDataPerID(gameID: string): Promise<any> {
 
 
 //POSTs Elements to poc
-export async function createPOCData(game: Submission): Promise<boolean> {
-  const bodyData = JSON.stringify(game);
-  console.log(bodyData);
-  const headers = new Headers();
+export async function createGameFromSubmission(submission: Submission): Promise<boolean> {
+  const submissionWrite: SubmissionWrite = {} as SubmissionWrite;
+  
+  for(const key in submission) {
+    if(key != "_id") {
+      (submissionWrite as any) [key] = submission [key as keyof Submission];
+    }
+  }
 
+  const bodyData = JSON.stringify(submissionWrite);
+  const headers = new Headers();
   headers.set("Content-Type", "application/json");
 
-  const request = new Request("http://127.0.0.1:8080/game", {
+  const request = new Request("http://127.0.0.1:8080/games", {
     method: "POST",
     headers: headers,
     body: bodyData
@@ -101,10 +107,34 @@ export async function createPOCData(game: Submission): Promise<boolean> {
   try {
     const response = await fetch(request); 
     const text = await response.text();
-    console.log(`Response after sending Game: ${game.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
+    console.log(`Response after sending Game: ${submission.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
     return response.ok;
   } catch (error: any) {
     console.error(error.message);
     return false;
   }
+}
+
+
+export async function deleteSubmission(submitID: string): Promise<Boolean> {
+  const headers: Headers = new Headers();
+  const url = `http://127.0.0.1:8080/submits/${submitID}`;
+
+  headers.set('Content-Type', 'application/json');
+
+  const request: RequestInfo = new Request(url, {
+    method: 'DELETE',
+    headers: headers
+  });
+
+  try {
+    const response = await fetch(request);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+    return response.ok;
+  } catch (error: any) {
+    console.error(error.message);
+  }
+  return false
 }

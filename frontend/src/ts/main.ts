@@ -1,19 +1,27 @@
 import type { Submission } from "./models/submission";
-import type { Game } from "./models/Game";
+import type { Game } from "./models/game";
 import { readData } from "./api/game";
 import { addElement, clearForm, createListElement } from "./dom/form";
-import { buttonAddSubmission, moveEntry } from "./dom/events";
+import { buttonAddSubmission } from "./dom/events";
 
 
 // queries the HTML Elements from the DOM Tree for manipulation and reading data
 const gameSubmittingButton: HTMLButtonElement = document.getElementById("submit-game-button") as HTMLButtonElement;
-const routeSubmit: string = "/submit/list";
-const routeGame: string = "/game/list";
+const listSubmit: HTMLUListElement = document.getElementById("all-submits") as HTMLUListElement;
+const listGame: HTMLUListElement = document.getElementById("all-games") as HTMLUListElement;
+const routeSubmit: string = "/submits";
+const routeGame: string = "/games";
 
 gameSubmittingButton.addEventListener("click", () => buttonAddSubmission());
 
 
-async function loadInitialElements() {
+export async function SyncElements() {
+  while(listSubmit.firstChild) {
+    listSubmit.removeChild(listSubmit.firstChild);
+  }
+  while(listGame.firstChild) {
+    listGame.removeChild(listGame.firstChild);
+  }
   const games: Game[] = await readData(routeGame);
   const submits: Submission[] = await readData(routeSubmit);
 
@@ -23,17 +31,9 @@ async function loadInitialElements() {
   }
   for (const submit of submits) {
     const submitListElement: HTMLElement = createListElement(submit);
-    console.log(submitListElement)
-
-    // TODO: Move logig to createListElement()
-    const moveButton: HTMLButtonElement = document.createElement("button");
-    moveButton.textContent = "Move Entry";
-    moveButton.onclick = () => moveEntry(submit._id);
-
-    submitListElement.appendChild(moveButton)
     addElement(submitListElement, "all-submits");
   }
 }
 
-loadInitialElements();
+SyncElements();
 clearForm();

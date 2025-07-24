@@ -1,5 +1,7 @@
 import type { Submission } from "../models/submission";
-import type { Game } from "../models/Game";
+import type { Game } from "../models/game";
+import { isGame } from "../models/game";
+import { moveEntry } from "./events";
 
 
 const titleInput = document.getElementById("add-title") as HTMLInputElement;
@@ -43,9 +45,11 @@ export function clearForm(): void {
 
 //creates List Elements, including button
 export function createListElement(element: Game | Submission): HTMLElement {
+  console.log("======================")
+  console.log(element)
   const listElement: HTMLElement = document.createElement("li") as HTMLElement;
   listElement.className = "game-element";
-  for(const key of Object.keys(element)){
+  for(const key of Object.keys(element)) {
     if(key != "_id"){
       //@ts-ignore
       const value = element[key];
@@ -53,6 +57,12 @@ export function createListElement(element: Game | Submission): HTMLElement {
       gameProperty.textContent = `${key}: ${value}`;
       listElement.appendChild(gameProperty);
     }
+  }
+  if(!isGame(element)) {
+    const moveButton: HTMLButtonElement = document.createElement("button");
+    moveButton.textContent = "Move Entry";
+    moveButton.onclick = () => moveEntry(element._id);
+    listElement.appendChild(moveButton)
   }
   return listElement
 }

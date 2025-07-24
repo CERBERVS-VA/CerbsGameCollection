@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from enum import Enum
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Path
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware 
 from pydantic import BaseModel, Field
@@ -42,7 +42,7 @@ class Submit(BaseModel):
 
 class Game(Submit):
     appid: int | None = -1
-    status: GameStatus
+    status: GameStatus | None = GameStatus.planned
 
 
 class User(BaseModel):
@@ -77,22 +77,9 @@ async def make_collection():
     collection = db["user"]
 
 
-@app.post("/submit")
-async def submit(entry: Submit):
-    print(entry)
-    db = await connect()
-    entry_dict = entry.model_dump(exclude_none=True, by_alias=True) # BaseModel doesn't support .dict(), instead we use .model_dump()
-    inserted_one = await db.submit.insert_one(entry_dict)
-    if inserted_one.inserted_id:
-        inserted_game = await db.submit.find_one({"_id": inserted_one.inserted_id})
-        if inserted_game:
-            return Submit(**inserted_game)
-    else:
-        raise HTTPException(status_code = 500, detail = "Error adding Document")
-    
 
 # adds game to POC collection
-@app.post("/game")
+@app.post("/games")
 async def addGame(entry: Submit):
     print(entry)
     db = await connect()
@@ -106,26 +93,7 @@ async def addGame(entry: Submit):
         raise HTTPException(status_code = 500, detail = "Error adding Document")
 
 
-@app.get("/submit/list")
-async def list_submits(_id: str | None = None):
-    db = await connect()
-    cursor = db["submit"]
-    if _id:
-        submitcursor = cursor.find({"_id": ObjectId(_id)})
-    else:
-        submitcursor = cursor.find()
-    submits: list[Submit] = []
-    async for submit in submitcursor:
-        print(submit)
-        if submit is None:
-            print("empty :((")
-        else:
-            submits.append(Submit(**submit))
-    print(submits)
-    return submits
-
-
-@app.get("/game/list")
+@app.get("/games")
 async def list_games():
     db = await connect()
     cursor = db["poc"]
@@ -138,3 +106,54 @@ async def list_games():
         else:
             games.append(Game(**game))
     return games
+
+
+@app.post("/submits")
+async def submit(entry: Submit):
+    print(entry)
+    db = await connect()
+    entry_dict = entry.model_dump(exclude_none=True, by_alias=True) # BaseModel doesn't support .dict(), instead we use .model_dump()
+    inserted_one = await db.submit.insert_one(entry_dict)
+    if inserted_one.inserted_id:
+        inserted_game = await db.submit.find_one({"_id": inserted_one.inserted_id})
+        if inserted_game:
+            return Submit(**inserted_game)
+    else:
+        raise HTTPException(status_code = 500, detail = "Error adding Document")
+    
+
+@app.get("/submits/{id}")
+async def read_submits(id: str): # type: ignore
+    db = await connect()
+    submit = await db.submit.find_one({"_id": ObjectId(id)})
+    submit = Submit(**submit) # type: ignore
+    return submit
+
+
+@app.get("/submits")
+async def read_submits():
+    db = await connect()
+    cursor = db["submit"]
+    submitcursor = cursor.find()
+    submits: list[Submit] = []
+    async for submit in submitcursor:
+        if submit is None:
+            print("empty :((")
+        else:
+            submits.append(Submit(**submit))
+    return submits
+
+
+@app.delete("/submits/{target_id}")
+async def delete_submits(target_id: str):
+    db = await connect()
+    submit = await db.submit.find_one({"_id": ObjectId(target_id)})
+
+    if submit is None:
+        raise HTTPException(status_code = 404, detail = f"No Submission with id {target_id}")
+    
+    result = await db.submit.delete_one({"_id": ObjectId(target_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code = 404, detail = f"No Submission with id {target_id}")
+    else:
+        raise HTTPException(status_code = 410, detail = f"Submission with id {target_id} successfully deleted")
