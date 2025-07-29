@@ -19,7 +19,7 @@ async def read_submit(
     id: str,
     db: AsyncIOMotorClient = Depends(get_database)
 ):
-    submit = read_submit_by_id(db, id)
+    submit = await read_submit_by_id(db, id)
     return submit
 
 
@@ -28,7 +28,7 @@ async def read_submit(
 async def read_submits(
     db: AsyncIOMotorClient = Depends(get_database)
 ):
-    submits = read_all_submits(db)
+    submits = await read_all_submits(db)
     return submits
 
 

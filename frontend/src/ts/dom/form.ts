@@ -45,8 +45,6 @@ export function clearForm(): void {
 
 //creates List Elements, including button
 export function createListElement(element: Game | Submission): HTMLElement {
-  console.log("======================")
-  console.log(element)
   const listElement: HTMLElement = document.createElement("li") as HTMLElement;
   listElement.className = "game-element";
   for(const key of Object.keys(element)) {

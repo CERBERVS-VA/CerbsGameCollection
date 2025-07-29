@@ -23,15 +23,15 @@ export async function buttonAddSubmission(): Promise<boolean> {
 
 
 export async function moveEntry(submitID: string) { 
-  console.log("Entry "+submitID+" moved successfully");
   const submit: Submission = await readSubmit(submitID);
-  console.log(submit);
   let success = await createGameFromSubmission(submit);
   if(success) {
     await deleteSubmission(submitID);
     SyncElements();
+    console.log("Entry "+submitID+" moved successfully");
   }
 }
+
 
 export async function editEntry(submitID: string) {
   console.log("Editing Entry "+submitID);

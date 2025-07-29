@@ -9,8 +9,6 @@ import { buttonAddSubmission } from "./dom/events";
 const gameSubmittingButton: HTMLButtonElement = document.getElementById("submit-game-button") as HTMLButtonElement;
 const listSubmit: HTMLUListElement = document.getElementById("all-submits") as HTMLUListElement;
 const listGame: HTMLUListElement = document.getElementById("all-games") as HTMLUListElement;
-const routeSubmit: string = "/submits";
-const routeGame: string = "/games";
 
 gameSubmittingButton.addEventListener("click", () => buttonAddSubmission());
 
@@ -22,8 +20,8 @@ export async function SyncElements() {
   while(listGame.firstChild) {
     listGame.removeChild(listGame.firstChild);
   }
-  const games: Game[] = await readData(routeGame);
-  const submits: Submission[] = await readData(routeSubmit);
+  const games: Game[] = await readData("games");
+  const submits: Submission[] = await readData("submits");
 
   for (const game of games) {
     const gameListElement: HTMLElement = createListElement(game);

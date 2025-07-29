@@ -1,4 +1,6 @@
 import type { Submission, SubmissionWrite } from "../models/submission";
+import { DB_URL } from "../core/config";
+
 
 //queries data from API
 /**
@@ -6,10 +8,9 @@ import type { Submission, SubmissionWrite } from "../models/submission";
  * 
  * @returns {Game} List of the fetched games.    
  */
-export async function readData(route: string): Promise<any> {
+export async function readData(endpoint: string): Promise<any> {
   const headers: Headers = new Headers();
-  const url = "http://127.0.0.1:8080";
-  const uri = `${url}${route}`;
+  const uri = `${DB_URL}/${endpoint}`;
 
   headers.set('Content-Type', 'application/json');
 
@@ -40,7 +41,7 @@ export async function createSubmission(game: Submission): Promise<boolean> {
 
   headers.set("Content-Type", "application/json");
 
-  const request = new Request("http://127.0.0.1:8080/submits", {
+  const request = new Request(`${DB_URL}/submits`, {
     method: "POST",
     headers: headers,
     body: bodyData
@@ -61,7 +62,7 @@ export async function createSubmission(game: Submission): Promise<boolean> {
 //reads data from submits per game ID, useful for buttons
 export async function readSubmit(submitID: string): Promise<any> {
   const headers: Headers = new Headers();
-  const url = `http://127.0.0.1:8080/submits/${submitID}`;
+  const url = `${DB_URL}/submits/${submitID}`;
 
   headers.set('Content-Type', 'application/json');
 
@@ -98,7 +99,7 @@ export async function createGameFromSubmission(submission: Submission): Promise<
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
 
-  const request = new Request("http://127.0.0.1:8080/games", {
+  const request = new Request(`${DB_URL}/games`, {
     method: "POST",
     headers: headers,
     body: bodyData
@@ -118,7 +119,7 @@ export async function createGameFromSubmission(submission: Submission): Promise<
 
 export async function deleteSubmission(submitID: string): Promise<Boolean> {
   const headers: Headers = new Headers();
-  const url = `http://127.0.0.1:8080/submits/${submitID}`;
+  const url = `${DB_URL}/submits/${submitID}`;
 
   headers.set('Content-Type', 'application/json');
 

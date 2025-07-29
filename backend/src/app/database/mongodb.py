@@ -1,7 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 
-
-SERVER_URL = "mongodb://admin:123@localhost:27017"
+from ..core.config import SERVER_URL
 
 
 class DBConnection:

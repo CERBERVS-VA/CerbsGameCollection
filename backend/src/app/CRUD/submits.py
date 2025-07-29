@@ -34,8 +34,12 @@ async def create_submit_from_entry(db, entry):
     
 
 async def delete_submit(db, target_id):
-    result = await db[DB_NAME]["submit"].delete_one({"_id": ObjectId(target_id)})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code = 404, detail = f"No Submission with id {target_id}")
-    else:
-        raise HTTPException(status_code = 410, detail = f"Submission with id {target_id} successfully deleted")
+    try: 
+        result = await db[DB_NAME][SUBMIT_COLLECTION].delete_one({"_id": ObjectId(target_id)})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code = 404, detail = f"No Submission with id {target_id}")
+        else:
+            print(f"Submission with ID {target_id} successfully deleted")
+    except Exception as e: 
+        print(e)
+        raise HTTPException(status_code = 404, detail = f"Submission with id {target_id} successfully deleted")
