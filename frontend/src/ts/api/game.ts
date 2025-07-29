@@ -117,6 +117,7 @@ export async function createGameFromSubmission(submission: Submission): Promise<
 }
 
 
+// deletes Element from Submits
 export async function deleteSubmission(submitID: string): Promise<Boolean> {
   const headers: Headers = new Headers();
   const url = `${DB_URL}/submits/${submitID}`;

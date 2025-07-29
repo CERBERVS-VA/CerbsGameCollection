@@ -1,4 +1,5 @@
 import type { Submission } from "../models/submission";
+import type { Game } from "../models/game";
 import { createGameFromSubmission, createSubmission, readSubmit, deleteSubmission } from "../api/game";
 import { readForm, addElement, clearForm, createListElement } from "../dom/form";
 import { validateFormData } from "../core/validate";
@@ -33,8 +34,36 @@ export async function moveEntry(submitID: string) {
 }
 
 
-export async function editEntry(submitID: string) {
-  console.log("Editing Entry "+submitID);
+export async function editEntry(game: Game, listElement: HTMLElement) { //TODO make it be a key/value pair instead of string | GAME NEEDS TO BE OBJECT OR SMTH
+  console.log("Editing Entry "+game._id);
+  if(listElement.hasChildNodes()){
+    for(let child of listElement.children){
+      const inputElement: HTMLInputElement = document.createElement("input");
+      inputElement.type = 'text';
+      inputElement.value = child.textContent as string;
+      inputElement.placeholder = child.textContent as string;
+
+      const statusInput: HTMLSelectElement = document.createElement("select");
+      statusInput.add(new Option("planned", "planned"), undefined);
+      statusInput.add(new Option("ongoing", "ongoing"), undefined);
+      statusInput.add(new Option("completed", "completed"), undefined);
+
+      const breakElement: HTMLBRElement = document.createElement("br");
+
+      if(child.nodeName == "P"){
+        if(child.textContent?.includes("status:")){
+          child.appendChild(statusInput);
+        } else{
+          listElement.replaceChild(inputElement, child);
+          listElement.insertBefore(breakElement, inputElement.nextSibling);
+        }
+      }
+      if(child.nodeName == "BUTTON"){
+        const confirmButton: HTMLButtonElement = child as HTMLButtonElement;
+        confirmButton.textContent = "Confirm Edit";
+        confirmButton.onclick = () => console.log("YIPPIE add function here later");
+      }
+    }
+  }
   //TODO: make api function to read poc entry, add input fields and jazz to each datapoint of the entry and add "confirm edit" button that updates the game in poc
 }
-

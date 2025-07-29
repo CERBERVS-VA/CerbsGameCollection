@@ -47,6 +47,7 @@ export function clearForm(): void {
 export function createListElement(element: Game | Submission): HTMLElement {
   const listElement: HTMLElement = document.createElement("li") as HTMLElement;
   listElement.className = "game-element";
+  listElement.id = element._id;
   for(const key of Object.keys(element)) {
     if(key != "_id"){
       //@ts-ignore
@@ -65,7 +66,7 @@ export function createListElement(element: Game | Submission): HTMLElement {
   if(isGame(element)) {
     const editButton: HTMLButtonElement = document.createElement("button");
     editButton.textContent = "Edit Entry";
-    editButton.onclick = () => editEntry(element._id);
+    editButton.onclick = () => editEntry(element, listElement);
     listElement.appendChild(editButton)
   }
   return listElement
