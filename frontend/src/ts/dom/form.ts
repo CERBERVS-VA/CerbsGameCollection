@@ -1,7 +1,7 @@
 import type { Submission } from "../models/submission";
 import type { Game } from "../models/game";
 import { isGame } from "../models/game";
-import { moveEntry } from "./events";
+import { moveEntry, editEntry } from "./events";
 
 
 const titleInput = document.getElementById("add-title") as HTMLInputElement;
@@ -63,6 +63,12 @@ export function createListElement(element: Game | Submission): HTMLElement {
     moveButton.textContent = "Move Entry";
     moveButton.onclick = () => moveEntry(element._id);
     listElement.appendChild(moveButton)
+  }
+  if(isGame(element)) {
+    const editButton: HTMLButtonElement = document.createElement("button");
+    editButton.textContent = "Edit Entry";
+    editButton.onclick = () => editEntry(element._id);
+    listElement.appendChild(editButton)
   }
   return listElement
 }
