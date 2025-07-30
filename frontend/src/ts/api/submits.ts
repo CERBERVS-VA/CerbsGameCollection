@@ -2,15 +2,9 @@ import type { Submission, SubmissionWrite } from "../models/submission";
 import { DB_URL } from "../core/config";
 
 
-//queries data from API
-/**
- * Querries game data from API.
- * 
- * @returns {Game} List of the fetched games.    
- */
-export async function readData(endpoint: string): Promise<any> {
+export async function readSubmits(): Promise<Submission[]> {
   const headers: Headers = new Headers();
-  const uri = `${DB_URL}/${endpoint}`;
+  const uri = `${DB_URL}/submits`;
 
   headers.set('Content-Type', 'application/json');
 
@@ -26,35 +20,9 @@ export async function readData(endpoint: string): Promise<any> {
     }
 
     const json = await response.json();
-    return json;
+    return json as Submission[];
   } catch (error: any) {
-    console.error(error.message);
-  }
-}
-
-
-//sends Elements added to poc list to the database and returns status(plus content??)
-export async function createSubmission(game: Submission): Promise<boolean> {
-  const bodyData = JSON.stringify(game);
-  console.log(bodyData);
-  const headers = new Headers();
-
-  headers.set("Content-Type", "application/json");
-
-  const request = new Request(`${DB_URL}/submits`, {
-    method: "POST",
-    headers: headers,
-    body: bodyData
-  });
- 
-  try {
-    const response = await fetch(request); 
-    const text = await response.text();
-    console.log(`Response after sending Game: ${game.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
-    return response.ok;
-  } catch (error: any) {
-    console.error(error.message);
-    return false;
+    throw(error.message);
   }
 }
 
@@ -85,21 +53,13 @@ export async function readSubmit(submitID: string): Promise<any> {
 }
 
 
-//POSTs Elements to poc
-export async function createGameFromSubmission(submission: Submission): Promise<boolean> {
-  const submissionWrite: SubmissionWrite = {} as SubmissionWrite;
-  
-  for(const key in submission) {
-    if(key != "_id") {
-      (submissionWrite as any) [key] = submission [key as keyof Submission];
-    }
-  }
-
-  const bodyData = JSON.stringify(submissionWrite);
+export async function createSubmission(submission: SubmissionWrite): Promise<Submission> {
+  const bodyData = JSON.stringify(submission);
   const headers = new Headers();
+
   headers.set("Content-Type", "application/json");
 
-  const request = new Request(`${DB_URL}/games`, {
+  const request = new Request(`${DB_URL}/submits`, {
     method: "POST",
     headers: headers,
     body: bodyData
@@ -107,12 +67,11 @@ export async function createGameFromSubmission(submission: Submission): Promise<
  
   try {
     const response = await fetch(request); 
-    const text = await response.text();
-    console.log(`Response after sending Game: ${submission.title}\nStatus: ${response.status}\nBody: ${JSON.parse(text)}`)
-    return response.ok;
+    let json = await response.json();
+    console.log(`Response after sending Game: ${submission.title}\nStatus: ${response.status}\nBody: ${json}`)
+    return json;
   } catch (error: any) {
-    console.error(error.message);
-    return false;
+    throw(error.message);
   }
 }
 
@@ -138,5 +97,6 @@ export async function deleteSubmission(submitID: string): Promise<Boolean> {
   } catch (error: any) {
     console.error(error.message);
   }
+
   return false
 }

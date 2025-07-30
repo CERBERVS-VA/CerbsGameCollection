@@ -1,12 +1,12 @@
 import type { ShapeToType } from "../core/type_validation";
-import { POCStatus } from "./base";
+import { GameStatusEnum } from "./base";
 import { isShapeMatch } from "../core/type_validation";
 import { submissionShape } from "./shared";
 
 
 const gameShape = {
   ...submissionShape,
-  status: { enum: Object.values(POCStatus) },
+  status: { enum: Object.values(GameStatusEnum) },
   appid: 'number',
 } as const;
 

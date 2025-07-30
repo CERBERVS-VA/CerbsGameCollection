@@ -26,3 +26,5 @@ class GameStatus(str, Enum):
 class Game(Submit):
     appid: int | None = -1
     status: GameStatus | None = GameStatus.planned
+
+# {'_id': 'string', 'title': 'string', 'submitter': 'string', 'releaseYear': -1, 'publisher': 'string', 'appid': -1, 'status': 'planned'}
